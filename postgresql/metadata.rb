@@ -10,3 +10,4 @@ recipe            "postgresql::server", "Installs postgresql server packages, te
 %w{rhel centos fedora ubuntu debian gentoo}.each do |os|
   supports os
 end
+ 
