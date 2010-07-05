@@ -16,3 +16,4 @@ attribute "postgresql/encoding",
   :description => "Encoding used by PostgreSQL server",
   :type => "string",
   :default => "en_US.UTF-8"
+
