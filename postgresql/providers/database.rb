@@ -1,4 +1,4 @@
-include Opscode::MySQL
+include Opscode::PostgreSQL
 
 action :create do
   unless postgresql_database_exists?(new_resource.name)
@@ -6,6 +6,7 @@ action :create do
   else
     Chef::Log.debug("PostgreSQL database \"#{new_resource.name}\" exists.")
   end
+=begin
   unless new_resource.owner.to_s == ""
     postgresql_user "#{new_resource.owner}" do
       host new_resource.owner_host
@@ -17,6 +18,7 @@ action :create do
       privileges "ALL"
     end
   end
+=end
 end
 
 action :delete do

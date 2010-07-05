@@ -4,11 +4,19 @@ module Opscode
     @@dbh = nil
     @@users = nil
     @@grants = nil
-    @@databases = nil
+    @@databases = []
     
     def postgresql_database_exists?(database)
       postgresql_databases.include?(database)
     end
+    
+    def postgresql_create_database(database)
+      @@databases = nil
+      Chef::Log.info("Creating PostgreSQL database \"#{database}\".")
+      Chef::Log.debug("PostgreSQL query: CREATE DATABASE #{postgresql_dbh.quote_ident(database)}")
+      postgresql_dbh.query("CREATE DATABASE #{postgresql_dbh.quote_ident(database)}")
+    end
+    
     
     private
     
@@ -22,6 +30,7 @@ module Opscode
       password = "password"
       #password = nil
       oksection = false
+=begin
       File.read("/root/.pgpass").split(":").each { |option|
         if option.strip =~ /\A\[(\S+)\]\Z/
           oksection = %w(mysql client).include?($1)
@@ -31,6 +40,7 @@ module Opscode
           password = $1
         end
       }
+=end
       
       # Connect to the PostgreSQL server. Options are:
       #pghost : Server hostname(string) 
@@ -45,8 +55,8 @@ module Opscode
     
     def postgresql_databases
       return @@databases if @@databases
-       postgresql_dbh.exec("select datname from pg_database").each do |database|
-        @@databases << database
+      postgresql_dbh.exec("select datname from pg_database").each do |database|
+        @@databases << database["datname"]
       end
     end
     

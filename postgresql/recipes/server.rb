@@ -66,8 +66,7 @@ service "postgresql" do
   end
   supports :restart => true, :status => true, :reload => true
   #action :nothing
-  #action [:enable, :start]
-  action :enable
+  action [:enable, :start]
 end
 
 # ACL -s 
@@ -95,9 +94,8 @@ end
 
 # template ".pgpass"
 
-# To erase a database set action something else than :enable
 postgresql_database "teszt" do
-  #action :disable
+  action :create
   owner "postgres"
   encoding node[:postgresql][:encoding]
 end
