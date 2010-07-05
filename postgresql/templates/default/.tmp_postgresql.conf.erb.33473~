@@ -56,7 +56,7 @@
 
 # - Connection Settings -
 
-listen_addresses = '<%= @listen_addresses %>'	# what IP address(es) to listen on;
+listen_addresses = '<%= @listen_address %>'	# what IP address(es) to listen on;
 					# comma-separated list of addresses;
 					# defaults to 'localhost', '*' = all
 					# (change requires restart)
@@ -443,14 +443,14 @@ datestyle = 'iso, mdy'
 					# share/timezonesets/.
 #extra_float_digits = 0			# min -15, max 2
 #client_encoding = sql_ascii		# actually, defaults to database
-									# encoding
+					# encoding
 
 # These settings are initialized by initdb, but they can be changed.
-lc_messages = '<%= @locale %>.<%= @encoding %>'			# locale for system error message
-						# strings
-lc_monetary = '<%= @locale %>.<%= @encoding %>'			# locale for monetary formatting
-lc_numeric = '<%= @locale %>.<%= @encoding %>'			# locale for number formatting
-lc_time = '<%= @locale %>.<%= @encoding %>'				# locale for time formatting
+lc_messages = 'en_US.UTF-8'			# locale for system error message
+					# strings
+lc_monetary = 'en_US.UTF-8'			# locale for monetary formatting
+lc_numeric = 'en_US.UTF-8'			# locale for number formatting
+lc_time = 'en_US.UTF-8'				# locale for time formatting
 
 # default configuration for text search
 default_text_search_config = 'pg_catalog.english'

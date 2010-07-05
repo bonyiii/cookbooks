@@ -56,4 +56,4 @@ end
 
 default[:postgresql][:locale] = "en_US"
 default[:postgresql][:encoding] = "UTF-8"
-default[:postgresql][:listen_address] = "*"
+default[:postgresql][:listen_addresses] = "*"

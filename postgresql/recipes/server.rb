@@ -36,8 +36,8 @@ case node[:platform]
     mode 0644
     variables(
     :locale => node[:postgresql][:locale],
-    :encoding => node[:postgresql][:encoding],
-    :listen_address => node[:postgresql][:listen_address])
+    :encoding => node[:postgresql][:encoding]
+    )
   end
   
   # Set sensible defaults and run initdb via emerge --config  
@@ -55,6 +55,20 @@ else
   package "postgresql"
 end
 
+# Postgres main config file settings replaces the one that initdb creates :(
+template "#{node[:postgresql][:dir]}/postgresql.conf" do
+  source "postgresql.conf.erb"
+  owner "postgres"
+  group "postgres"
+  mode 0600
+  #notifies :restart, resources(:service => "postgresql")
+  variables(
+    :locale => node[:postgresql][:locale],
+    :encoding => node[:postgresql][:encoding],
+    :listen_addresses => node[:postgresql][:listen_addresses]
+  )
+end
+
 service "postgresql" do
   case node[:platform]
     when "debian","ubuntu", "gentoo"
@@ -66,18 +80,10 @@ service "postgresql" do
   action [:enable, :start]
 end
 
-template "#{node[:postgresql][:dir]}/postgresql.conf" do
-  source "postgresql.conf.erb"
-  owner "postgres"
-  group "postgres"
-  mode 0600
-  notifies :restart, resources(:service => "postgresql")
-  variables(:encoding => node[:postgresql][:encoding])
-end
 
 # To erase a database set action something else than :enable
 postgresql_database "teszt" do
-  action :enable2
+  #action :disable
   owner "postgres"
   encoding node[:postgresql][:encoding]
 end
