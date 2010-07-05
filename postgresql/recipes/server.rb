@@ -23,7 +23,10 @@ case node[:platform]
   when "gentoo"
   include_recipe "gentoo::portage"
   
-  gentoo_package "dev-ruby/ruby-postgres"
+  gentoo_package "dev-ruby/pg" do
+      action :upgrade
+      unmask "dev-ruby/pg"
+  end
   
   # To be able manipulate postgresql server via ruby.
   gentoo_package "dev-db/postgresql-server"
@@ -63,10 +66,11 @@ service "postgresql" do
   end
   supports :restart => true, :status => true, :reload => true
   #action :nothing
-  action [:enable, :start]
+  #action [:enable, :start]
+  action :enable
 end
 
-# Postgres main config file settings replaces the one that initdb creates :(
+# ACL -s 
 template "#{node[:postgresql][:dir]}/pg_hba.conf" do
   source "pg_hba.conf.erb"
   owner "postgres"
@@ -75,7 +79,7 @@ template "#{node[:postgresql][:dir]}/pg_hba.conf" do
   notifies :restart, resources(:service => "postgresql")
 end
 
-# Postgres main config file settings replaces the one that initdb creates :(
+# Postgres main config file, replaces the one that initdb creates :(
 template "#{node[:postgresql][:dir]}/postgresql.conf" do
   source "postgresql.conf.erb"
   owner "postgres"
@@ -88,6 +92,8 @@ template "#{node[:postgresql][:dir]}/postgresql.conf" do
     :listen_addresses => node[:postgresql][:listen_addresses]
   )
 end
+
+# template ".pgpass"
 
 # To erase a database set action something else than :enable
 postgresql_database "teszt" do
