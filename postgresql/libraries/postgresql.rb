@@ -14,7 +14,7 @@ module Opscode
     
     def postgresql_dbh
       return @@dbh if @@dbh
-      require "postgres"
+      require "pg"
       host = "localhost"
       port = 5432
       db = "postgres"

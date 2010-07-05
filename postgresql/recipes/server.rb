@@ -24,8 +24,8 @@ case node[:platform]
   include_recipe "gentoo::portage"
   
   gentoo_package "dev-ruby/pg" do
-      action :upgrade
-      unmask "dev-ruby/pg"
+    action :upgrade
+    keywords "dev-ruby/pg"
   end
   
   # To be able manipulate postgresql server via ruby.
