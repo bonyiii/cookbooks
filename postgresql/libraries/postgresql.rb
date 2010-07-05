@@ -19,8 +19,8 @@ module Opscode
       port = 5432
       db = "postgres"
       user = "postgres"
-      passoword = "password"
-      password = nil
+      password = "password"
+      #password = nil
       oksection = false
       File.read("/root/.pgpass").split(":").each { |option|
         if option.strip =~ /\A\[(\S+)\]\Z/
@@ -45,7 +45,9 @@ module Opscode
     
     def postgresql_databases
       return @@databases if @@databases
-      @@databases = postgresql_dbh.exec("select datname from pg_database")
+       postgresql_dbh.exec("select datname from pg_database").each do |database|
+        @@databases << database
+      end
     end
     
   end # module PostgreSQL
