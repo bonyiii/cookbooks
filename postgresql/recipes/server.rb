@@ -55,20 +55,6 @@ else
   package "postgresql"
 end
 
-# Postgres main config file settings replaces the one that initdb creates :(
-template "#{node[:postgresql][:dir]}/postgresql.conf" do
-  source "postgresql.conf.erb"
-  owner "postgres"
-  group "postgres"
-  mode 0600
-  #notifies :restart, resources(:service => "postgresql")
-  variables(
-    :locale => node[:postgresql][:locale],
-    :encoding => node[:postgresql][:encoding],
-    :listen_addresses => node[:postgresql][:listen_addresses]
-  )
-end
-
 service "postgresql" do
   case node[:platform]
     when "debian","ubuntu", "gentoo"
@@ -80,6 +66,28 @@ service "postgresql" do
   action [:enable, :start]
 end
 
+# Postgres main config file settings replaces the one that initdb creates :(
+template "#{node[:postgresql][:dir]}/pg_hba.conf" do
+  source "pg_hba.conf.erb"
+  owner "postgres"
+  group "postgres"
+  mode 0600
+  notifies :restart, resources(:service => "postgresql")
+end
+
+# Postgres main config file settings replaces the one that initdb creates :(
+template "#{node[:postgresql][:dir]}/postgresql.conf" do
+  source "postgresql.conf.erb"
+  owner "postgres"
+  group "postgres"
+  mode 0600
+  notifies :restart, resources(:service => "postgresql")
+  variables(
+    :locale => node[:postgresql][:locale],
+    :encoding => node[:postgresql][:encoding],
+    :listen_addresses => node[:postgresql][:listen_addresses]
+  )
+end
 
 # To erase a database set action something else than :enable
 postgresql_database "teszt" do
@@ -87,16 +95,3 @@ postgresql_database "teszt" do
   owner "postgres"
   encoding node[:postgresql][:encoding]
 end
-
-=begin
-
-
-template "#{node[:postgresql][:dir]}/pg_hba.conf" do
-  source "pg_hba.conf.erb"
-  owner "postgres"
-  group "postgres"
-  mode 0600
-  notifies :reload, resources(:service => "postgresql")
-end
-
-=end
