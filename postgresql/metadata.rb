@@ -10,3 +10,9 @@ recipe            "postgresql::server", "Installs postgresql server packages, te
 %w{rhel centos fedora ubuntu debian gentoo}.each do |os|
   supports os
 end
+
+attribute "postgresql/encoding",
+  :display_name => "Postgresql encoding",
+  :description => "Encoding used by PostgreSQL server",
+  :type => "string",
+  :default => "en_US.UTF-8"

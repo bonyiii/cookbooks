@@ -64,8 +64,7 @@ mysql_grant "Giving all privileges to valaki" do
 end
 
 
-=begin
-if node.recipe?("iptables")
+if node.run_list?("iptables")
   ips = [node[:mysql][:client_ips]].flatten.select { |i| i != "127.0.0.1" }
   iptables_rule "mysql" do
     variables(:ips => ips)
@@ -73,13 +72,13 @@ if node.recipe?("iptables")
   end
 end
 
-if node.recipe?("monit")
+if node.run_list?("monit")
   monit_check "mysql" do
     variables(:bind_address => node[:mysql][:server][:bind_address])
   end
 end
 
-if node.recipe?("nagios::nrpe")
+if node.run_list?("nagios::nrpe")
   nrpe_password = get_password("mysql/nrpe")
   mysql_user "nrpe" do
     password nrpe_password
@@ -94,4 +93,3 @@ if node.recipe?("nagios::nrpe")
     variables(:password => nrpe_password)
   end
 end
-=end

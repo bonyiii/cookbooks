@@ -53,3 +53,5 @@ when "gentoo"
 else
   set[:postgresql][:dir]     = "/etc/postgresql/#{node.postgresql.version}/main"
 end
+
+default[:postgresql][:encoding] = "en_US.UTF-8"

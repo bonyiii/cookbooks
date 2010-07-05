@@ -24,6 +24,16 @@ case node[:platform]
   include_recipe "gentoo::portage"
   gentoo_package "dev-db/postgresql-server"
   
+  # Set default encoding in /etc/conf.d for emerge --config
+  template "/etc/conf.d/postgresql-#{node[:postgresql][:version][node[:platform]][:default]}" do
+    source "conf.d-postgresql-#{node[:postgresql][:version][node[:platform]][:default]}.erb"
+    owner "root"
+    group "root"
+    mode 0644
+    variables(:encoding => node[:postgresql][:encoding])
+  end
+  
+  # Set sensible defaults and run initdb via emerge --config  
   script "Conifgure Postgresql server" do
     interpreter "bash"
     user "root"
@@ -47,13 +57,11 @@ service "postgresql" do
   action [:enable, :start]
 end
 
+
+
 =begin
-template "#{node[:postgresql][:dir]}/pg_hba.conf" do
-  source "pg_hba.conf.erb"
-  owner "postgres"
-  group "postgres"
-  mode 0600
-  notifies :reload, resources(:service => "postgresql")
+execute "create database" do
+  
 end
 
 template "#{node[:postgresql][:dir]}/postgresql.conf" do
@@ -62,5 +70,17 @@ template "#{node[:postgresql][:dir]}/postgresql.conf" do
   group "postgres"
   mode 0600
   notifies :restart, resources(:service => "postgresql")
+  variables(:encoding => node[:postgresql][:encoding])
 end
+
+
+
+template "#{node[:postgresql][:dir]}/pg_hba.conf" do
+  source "pg_hba.conf.erb"
+  owner "postgres"
+  group "postgres"
+  mode 0600
+  notifies :reload, resources(:service => "postgresql")
+end
+
 =end
