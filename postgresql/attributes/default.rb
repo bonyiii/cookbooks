@@ -54,4 +54,6 @@ else
   set[:postgresql][:dir]     = "/etc/postgresql/#{node.postgresql.version}/main"
 end
 
-default[:postgresql][:encoding] = "en_US.UTF-8"
+default[:postgresql][:locale] = "en_US"
+default[:postgresql][:encoding] = "UTF-8"
+default[:postgresql][:listen_address] = "*"

@@ -2,7 +2,7 @@
 PGDATA="/var/lib/postgresql/8.4/data"
 
 # Options to pass to PostgreSQL's initdb.
-PG_INITDB_OPTS="--locale=<%= @locale %>.<%= @encoding %>"
+PG_INITDB_OPTS="--locale=<%= @encoding %>"
 
 # PostgreSQL User
 PGUSER="postgres"

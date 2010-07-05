@@ -22,6 +22,10 @@ include_recipe "postgresql::client"
 case node[:platform]
   when "gentoo"
   include_recipe "gentoo::portage"
+  
+  gentoo_package "dev-ruby/ruby-postgres"
+  
+  # To be able manipulate postgresql server via ruby.
   gentoo_package "dev-db/postgresql-server"
   
   # Set default encoding in /etc/conf.d for emerge --config
@@ -30,16 +34,21 @@ case node[:platform]
     owner "root"
     group "root"
     mode 0644
-    variables(:encoding => node[:postgresql][:encoding])
+    variables(
+    :locale => node[:postgresql][:locale],
+    :encoding => node[:postgresql][:encoding],
+    :listen_address => node[:postgresql][:listen_address])
   end
   
   # Set sensible defaults and run initdb via emerge --config  
   script "Conifgure Postgresql server" do
     interpreter "bash"
     user "root"
+    creates "#{node[:postgresql][:dir]}/postgresql.conf"
     code <<-EOF
     echo "y\n" > /tmp/answer_yes
     emerge --config dev-db/postgresql-server < /tmp/answer_yes 
+    rm /tmp/answer_yes
     EOF
   end
 else
@@ -57,13 +66,6 @@ service "postgresql" do
   action [:enable, :start]
 end
 
-
-
-=begin
-execute "create database" do
-  
-end
-
 template "#{node[:postgresql][:dir]}/postgresql.conf" do
   source "postgresql.conf.erb"
   owner "postgres"
@@ -73,6 +75,14 @@ template "#{node[:postgresql][:dir]}/postgresql.conf" do
   variables(:encoding => node[:postgresql][:encoding])
 end
 
+# To erase a database set action something else than :enable
+postgresql_database "teszt" do
+  action :enable2
+  owner "postgres"
+  encoding node[:postgresql][:encoding]
+end
+
+=begin
 
 
 template "#{node[:postgresql][:dir]}/pg_hba.conf" do
