@@ -13,4 +13,5 @@ attribute :createrole,     :kind_of => [TrueClass, FalseClass], :default => fals
 attribute :login,          :kind_of => [TrueClass, FalseClass], :default => true
 attribute :superuser,      :kind_of => [TrueClass, FalseClass], :default => false
 attribute :valid_until,    :kind_of => String
-
+# If we create a user and that user should owns a database 
+attribute :database,       :kind_of => String

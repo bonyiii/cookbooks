@@ -93,12 +93,11 @@ template "#{node[:postgresql][:dir]}/postgresql.conf" do
 end
 
 # template ".pgpass"
-
-postgresql_user "feri" do
+postgresql_database "teszt" do
   action :delete
 end
 
-postgresql_database "teszt" do
+postgresql_user "feri" do
   action :delete
 end
 

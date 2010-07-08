@@ -7,7 +7,7 @@ action :create do
     password = get_password("postgresql/#{new_resource.name}")
   end
   
-  if postgresql_user_exists?(new_resource)
+  if postgresql_user_exists?(new_resource.name)
     if new_resource.force_password
       postgresql_force_password(new_resource, password)
     end
@@ -18,5 +18,9 @@ action :create do
 end
 
 action :delete do
-  postgresql_drop_user(new_resource) if postgresql_user_exists?(new_resource)
+  begin
+    postgresql_drop_user(new_resource) if postgresql_user_exists?(new_resource.name)
+  rescue
+    Chef::Log.warn("Cannot delete PostgreSQL user: #{$!}")
+  end
 end

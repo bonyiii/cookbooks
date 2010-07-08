@@ -7,18 +7,19 @@ module Opscode
     @@databases = nil
     
     def postgresql_user_exists?(user)
-      postgresql_users.include?("#{user.name}")
+      postgresql_users.include?(user)
     end
     
     def postgresql_database_exists?(database)
       postgresql_databases.include?(database)
     end
     
-    def postgresql_create_database(database)
+    def postgresql_create_database(database, owner = nil )
       @@databases = nil
       Chef::Log.info("Creating PostgreSQL database \"#{database}\".")
-      Chef::Log.debug("PostgreSQL query: CREATE DATABASE #{postgresql_dbh.quote_ident(database)}")
-      postgresql_dbh.query("CREATE DATABASE #{postgresql_dbh.quote_ident(database)}")
+      Chef::Log.debug("itt van libraries/postgresql \"#{owner}\".")
+      create_query = "CREATE DATABASE #{postgresql_dbh.quote_ident(database)}"
+      postgresql_dbh.query(create_query)
     end
     
     def postgresql_drop_database(database)
@@ -41,7 +42,9 @@ module Opscode
       
       Chef::Log.debug("PostgreSQL query: #{create_query}")
       postgresql_dbh.query(create_query)
-      #postgresql_dbh.reload
+      unless user.database.blank?
+        postgresql_alter_database_owner(user.name, user.database)
+      end
     end
     
     def  postgresql_drop_user(user)
@@ -158,6 +161,13 @@ module Opscode
         @@users << row["usename"]
       end
       @@users
+    end
+    
+    def postgresql_alter_database_owner(owner, database)
+      Chef::Log.info("ALTER PostgreSQL database \"#{database}\" owner to \"#{owner}\".")
+      alter_query ="ALTER DATABASE #{postgresql_dbh.quote_ident(database)} OWNER TO #{postgresql_dbh.quote_ident(owner)}"
+      Chef::Log.debug("PostgreSQL query: #{alter_query}")
+      postgresql_dbh.query(alter_query)
     end
     
     
