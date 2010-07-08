@@ -94,8 +94,18 @@ end
 
 # template ".pgpass"
 
+postgresql_user "feri" do
+  action :delete
+end
+
+postgresql_database "teszt" do
+  action :delete
+end
+
 postgresql_database "teszt" do
   action :create
-  owner "postgres"
+  owner "feri"
+  owner_createdb true
+  owner_createrole true
   encoding node[:postgresql][:encoding]
 end

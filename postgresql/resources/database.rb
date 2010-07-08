@@ -6,6 +6,10 @@ end
 
 actions :create, :delete
 
-attribute :owner,      :kind_of => String
-attribute :owner_host, :kind_of => String, :default => "localhost"
-attribute :encoding,   :kind_of => String
+attribute :owner,                :kind_of => String
+attribute :encoding,             :kind_of => String
+attribute :owner_createdb,       :kind_of => [TrueClass, FalseClass], :default => false
+attribute :owner_createrole,     :kind_of => [TrueClass, FalseClass], :default => false
+attribute :owner_login,          :kind_of => [TrueClass, FalseClass], :default => true
+attribute :owner_superuser,      :kind_of => [TrueClass, FalseClass], :default => false
+attribute :owner_valid_until,    :kind_of => String
