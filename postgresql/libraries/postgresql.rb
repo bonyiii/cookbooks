@@ -42,7 +42,7 @@ module Opscode
       
       Chef::Log.debug("PostgreSQL query: #{create_query}")
       postgresql_dbh.query(create_query)
-      unless user.database == ""
+      if user.database && user.database != "" 
         postgresql_alter_database_owner(user.name, user.database)
       end
     end

@@ -109,7 +109,6 @@ postgresql_database "teszt" do
   encoding node[:postgresql][:encoding]
 end
 
-=begin
 execute "load_data_to_db_teszt" do
   command "/usr/bin/psql -U postgres teszt < /root/profi_gizike.sql"
 end
@@ -127,4 +126,3 @@ postgresql_grant "all_on_teszt_to_gizi" do
   user "gizi"
   privileges "ALL"
 end
-=end
