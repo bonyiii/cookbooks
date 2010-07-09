@@ -16,6 +16,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+include_recipe "password"
 
 case node[:platform] 
   when "ubuntu","debian"
@@ -25,4 +26,26 @@ case node[:platform]
   when "gentoo"
   include_recipe "gentoo::portage"
   gentoo_package "dev-db/postgresql-base"
+end
+
+# set node[:postgresql][:root_password] to "" and we'll generate and store the
+# PostgreSQL root password locally
+postgresql_root_password = if node[:postgresql][:root_password] == ""
+  get_password("postgresql//root")
+else
+  node[:postgresql][:root_password]
+end
+
+template "/root/.pgpass" do
+  source "dot.pgpass.erb"
+  owner "root"
+  group "root"
+  mode "0600"
+  variables(
+    :host => node[:postgresql][:server_address],
+    :port => node[:postgresql][:port],
+    :database => node[:postgresql][:database],
+    :username => node[:postgresql][:root],
+    :password => postgresql_root_password
+  )
 end

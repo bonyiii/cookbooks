@@ -108,3 +108,23 @@ postgresql_database "teszt" do
   owner_createrole true
   encoding node[:postgresql][:encoding]
 end
+
+=begin
+execute "load_data_to_db_teszt" do
+  command "/usr/bin/psql -U postgres teszt < /root/profi_gizike.sql"
+end
+
+postgresql_user "gizi" do
+  action :delete
+end
+
+postgresql_user "gizi" do
+  action :create
+end
+
+postgresql_grant "all_on_teszt_to_gizi" do
+  on "vendors"
+  user "gizi"
+  privileges "ALL"
+end
+=end

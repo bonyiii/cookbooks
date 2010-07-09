@@ -7,7 +7,7 @@ end
 actions :create, :delete
 
 attribute :privileges,   :kind_of => [String, Array], :default => "ALL"
-attribute :database,     :kind_of => String, :required => true
+attribute :on,           :kind_of => String, :required => true
 attribute :user,         :kind_of => String, :required => true
 attribute :grant_option, :kind_of => [TrueClass, FalseClass], :default => false
 

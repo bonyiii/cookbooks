@@ -17,15 +17,14 @@ module Opscode
     def postgresql_create_database(database, owner = nil )
       @@databases = nil
       Chef::Log.info("Creating PostgreSQL database \"#{database}\".")
-      Chef::Log.debug("itt van libraries/postgresql \"#{owner}\".")
-      create_query = "CREATE DATABASE #{postgresql_dbh.quote_ident(database)}"
+      create_query = "CREATE DATABASE #{postgresql_dbh.escape(database)}"
       postgresql_dbh.query(create_query)
     end
     
     def postgresql_drop_database(database)
       @@databases = nil
       Chef::Log.info("Dropping PostgreSQL database \"#{database}\".")
-      drop_query ="DROP DATABASE #{postgresql_dbh.quote_ident(database)}"
+      drop_query ="DROP DATABASE #{postgresql_dbh.escape(database)}"
       Chef::Log.debug("PostgreSQL query: #{drop_query}")
       postgresql_dbh.query(drop_query)
     end
@@ -33,16 +32,17 @@ module Opscode
     def postgresql_create_user(user, password)
       @@users = nil
       Chef::Log.info("Creating PostgreSQL user \"#{user.name}\".")
-      create_query = "CREATE USER #{postgresql_dbh.quote_ident(user.name)} WITH PASSWORD '#{postgresql_dbh.quote_ident(password)}'"
+      create_query = "CREATE USER #{postgresql_dbh.escape(user.name)} WITH PASSWORD '#{postgresql_dbh.escape(password)}'"
       create_query += " CREATEDB" if user.createdb
       create_query += " CREATEROLE" if user.createrole
+      create_query += " NOINHERIT" unless user.inherit
       create_query += " NOLOGIN" unless user.login
       create_query += " SUPERUSER" if user.superuser
-      create_query += " #{postgresql_dbh.quote_ident(user.valid_until)}" if user.valid_until
+      create_query += " VALID UNTIL '#{postgresql_dbh.escape(user.valid_until)}'" if user.valid_until
       
       Chef::Log.debug("PostgreSQL query: #{create_query}")
       postgresql_dbh.query(create_query)
-      unless user.database.blank?
+      unless user.database == ""
         postgresql_alter_database_owner(user.name, user.database)
       end
     end
@@ -50,9 +50,35 @@ module Opscode
     def  postgresql_drop_user(user)
       @@users = nil
       Chef::Log.info("Dropping PostgreSQL user \"#{user.name}\".")
-      query="DROP USER #{postgresql_dbh.quote_ident(user.name)}"
+      query="DROP USER #{postgresql_dbh.escape(user.name)}"
       Chef::Log.debug("PostgreSQL #{query}")
       postgresql_dbh.query(query)
+    end
+    
+    def postgresql_manage_privileges(action, grant, privileges)
+      on = grant.on.split(",")
+      privilege_query = if action == :delete
+        privileges += ["GRANT OPTION"] if grant.grant_option
+        Chef::Log.info("Revoking #{privileges.join(", ")} privileges on \"#{grant.on}\" from #{grant.user}")
+       "REVOKE #{privileges.join(", ")} ON #{on.join(",")} FROM #{grant.user}" 
+      else
+        with_grant_option = "WITH GRANT OPTION" if grant.grant_option
+        Chef::Log.info("Granting #{privileges.join(", ")} privileges on #{on.join(",")} to #{grant.user} #{with_grant_option}")
+        "GRANT #{privileges.join(", ")} ON #{on.join(",")} TO \"#{grant.user}\" #{with_grant_option}"
+      end
+      Chef::Log.debug("PosgreSQL query: #{privilege_query}")
+      postgresql_dbh.query(privilege_query)
+    end
+    
+    def postgresql_manage_grants(action, grant)
+      case action
+        when :create
+        missing_privileges = grant.privileges.split(",")
+        postgresql_manage_privileges(:create, grant, missing_privileges)
+        when :delete
+        unwanted_privileges = grant.privileges.split(",")
+        postgresql_manage_privileges(:delete, grant, unwanted_privileges)
+      end
     end
     
     
@@ -60,8 +86,8 @@ module Opscode
     def postgresql_force_password(user, password)
       password_ok = false
       select_query =
-      "SELECT password FROM pg_shadow WHERE usename ILIKE #{postgresql_dbh.quote_ident(user)} " + 
-      "AND passwd=MD5(#{postgresql_dbh.quote_ident(password) + postgresql_dbh.quote_ident(user)})"
+      "SELECT password FROM pg_shadow WHERE usename ILIKE '#{postgresql_dbh.escape(user)}' " + 
+      "AND passwd=MD5(#{postgresql_dbh.escape(password) + postgresql_dbh.escape(user)})"
       Chef::Log.debug("PostgreSQL query: #{select_query}")
       postgresql_dbh.query(select_query).each { |row| password_ok = row[0] == row[1] }
       unless password_ok
@@ -76,34 +102,21 @@ module Opscode
       end
     end
     
-    def postgresql_manage_grants(action, grant)
-      privileges = postgresq_user_privileges(grant)
-      current_db_privileges = privileges[grant.database] || []
-      new_db_privileges = [grant.privileges].flatten.map { |p| p.upcase }
-      case action
-        when :create
-        unless current_db_privileges.include?("ALL")
-          missing_privileges = new_db_privileges - current_db_privileges
-          unless missing_privileges.empty?
-            mysql_manage_privileges(:create, grant, missing_privileges)
-          else
-            Chef::Log.debug("MySQL user #{grant.user}@#{grant.user_host} has all necessary privileges on database \"#{grant.database}\".")
-          end
-        else
-          Chef::Log.debug("MySQL user #{grant.user}@#{grant.user_host} has ALL privileges on database \"#{grant.database}\".")
+    def postgresql_user_privileges(grant)
+      handle = postgresql_user_handle(grant, :grant)
+      return @@grants[handle] if @@grants && @@grants[handle]
+      @@grants ||= {}
+      @@grants[handle] = {}
+      Chef::Log.debug("MySQL query: SHOW GRANTS FOR #{handle}")
+      # TODO don't ignore grant option
+      mysql_dbh.query("SHOW GRANTS FOR #{handle}").each { |row|
+        if row[0] =~ /\AGRANT (.*) ON [`'"]?(\S+?)[`'"]?(\.\S+)? TO .+\Z/
+          @@grants[handle][$2] = $1.split(/,\s*/).map { |p|
+            p == "ALL PRIVILEGES" ? "ALL" : p
+          }
         end
-        when :delete
-        if new_db_privileges.include?("ALL") && !current_db_privileges.empty?
-          mysql_manage_privileges(:delete, grant, "ALL")
-        else
-          unwanted_privileges = current_db_privileges & new_db_privileges
-          unless unwanted_privileges.empty?
-            mysql_manage_privileges(:delete, grant, unwanted_privileges)
-          else
-            Chef::Log.debug("MySQL user #{grant.user}@#{grant.user_host} has no unwanted privileges on database \"#{grant.database}\".")
-          end
-        end
-      end
+      }
+      @@grants[handle]
     end
     
     private
@@ -111,24 +124,17 @@ module Opscode
     def postgresql_dbh
       return @@dbh if @@dbh
       require "pg"
-      host = "localhost"
-      port = 5432
-      db = "postgres"
-      user = "postgres"
-      password = "password"
-      #password = nil
-      oksection = false
-=begin
-      File.read("/root/.pgpass").split(":").each { |option|
-        if option.strip =~ /\A\[(\S+)\]\Z/
-          oksection = %w(mysql client).include?($1)
-        elsif oksection && option.strip =~ /\Ahost\s*=\s*(\S+)\Z/
-          host = $1
-        elsif oksection && option.strip =~ /\Apassword\s*=\s*(\S+)\Z/
-          password = $1
+      host, post, db, user, password = nil
+      File.read("/root/.pgpass").each do |line|
+        if line =~ /^\s*[^#]+\w$/
+          host, port, db, user, password = line.split(":")
+          break
         end
-      }
-=end
+      end
+      host = "localhost" if host.nil?
+      port = 5432 if port.nil?
+      db = "postgres" if db.nil? 
+      user = "postgres" if user.nil?
       
       # Connect to the PostgreSQL server. Options are:
       #pghost : Server hostname(string) 
@@ -165,20 +171,9 @@ module Opscode
     
     def postgresql_alter_database_owner(owner, database)
       Chef::Log.info("ALTER PostgreSQL database \"#{database}\" owner to \"#{owner}\".")
-      alter_query ="ALTER DATABASE #{postgresql_dbh.quote_ident(database)} OWNER TO #{postgresql_dbh.quote_ident(owner)}"
+      alter_query ="ALTER DATABASE #{postgresql_dbh.escape(database)} OWNER TO #{postgresql_dbh.escape(owner)}"
       Chef::Log.debug("PostgreSQL query: #{alter_query}")
       postgresql_dbh.query(alter_query)
-    end
-    
-    
-    # TODO: create_user doesn't use it
-    def postgresql_user_handle(user, resource_type = :user)
-      if resource_type == :grant
-        # user is a grant :)
-        "`#{postgresql_dbh.quote_ident(user.user)}`@`#{postgresql_dbh.quote_ident(user.user_host)}`"
-      else
-        "`#{postgresql_dbh.quote_ident(user.name)}`@`#{postgresql_dbh.quote_ident(user.host)}`"
-      end
     end
     
   end # module PostgreSQL

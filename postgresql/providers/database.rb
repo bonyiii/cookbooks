@@ -16,12 +16,6 @@ action :create do
       valid_until new_resource.owner_valid_until
       database new_resource.name
     end
-    
-    postgresql_grant "#{new_resource.name}_#{new_resource.owner}" do
-      database new_resource.name
-      user new_resource.owner
-      privileges "ALL"
-    end
   end
 end
 

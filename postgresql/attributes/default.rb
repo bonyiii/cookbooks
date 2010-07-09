@@ -57,3 +57,10 @@ end
 default[:postgresql][:locale] = "en_US"
 default[:postgresql][:encoding] = "UTF-8"
 default[:postgresql][:listen_addresses] = "*"
+
+# For .dot.pgpass
+default[:postgresql][:server_address] = "localhost"
+default[:postgresql][:port] = 5432
+default[:postgresql][:database] = "postgres"
+default[:postgresql][:root] = "postgres"
+default[:postgresql][:root_password] = "password"

@@ -10,6 +10,7 @@ attribute :password,       :kind_of => String
 attribute :force_password, :kind_of => [TrueClass, FalseClass], :default => false
 attribute :createdb,       :kind_of => [TrueClass, FalseClass], :default => false
 attribute :createrole,     :kind_of => [TrueClass, FalseClass], :default => false
+attribute :inherit,        :kind_of => [TrueClass, FalseClass], :default => true
 attribute :login,          :kind_of => [TrueClass, FalseClass], :default => true
 attribute :superuser,      :kind_of => [TrueClass, FalseClass], :default => false
 attribute :valid_until,    :kind_of => String
