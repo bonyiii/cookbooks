@@ -57,9 +57,10 @@ module Opscode
     
     def postgresql_manage_privileges(action, grant, privileges)
       on = grant.on.split(",")
+      postgresql_dbh({:db => grant.conn_db}, true)
       privilege_query = if action == :delete
         privileges += ["GRANT OPTION"] if grant.grant_option
-        Chef::Log.info("Revoking #{privileges.join(", ")} privileges on \"#{grant.on}\" from #{grant.user}")
+        Chef::Log.info("Revoking #{privileges.join(", ")} privileges on #{grant.on} from #{grant.user}")
        "REVOKE #{privileges.join(", ")} ON #{on.join(",")} FROM #{grant.user}" 
       else
         with_grant_option = "WITH GRANT OPTION" if grant.grant_option
@@ -81,27 +82,23 @@ module Opscode
       end
     end
     
-    
-    # TODO: finish
     def postgresql_force_password(user, password)
-      password_ok = false
-      select_query =
-      "SELECT password FROM pg_shadow WHERE usename ILIKE '#{postgresql_dbh.escape(user)}' " + 
-      "AND passwd=MD5(#{postgresql_dbh.escape(password) + postgresql_dbh.escape(user)})"
+      select_query = "SELECT passwd FROM pg_shadow WHERE usename ILIKE '#{postgresql_dbh.escape(user.name)}' " + 
+      "AND passwd='md5'||MD5('#{postgresql_dbh.escape(password) + postgresql_dbh.escape(user.name)}')"
       Chef::Log.debug("PostgreSQL query: #{select_query}")
-      postgresql_dbh.query(select_query).each { |row| password_ok = row[0] == row[1] }
-      unless password_ok
-        Chef::Log.info("Reseting MySQL password of #{user.name}@#{user.host}.")
-        set_query = "SET PASSWORD FOR #{mysql_user_handle(user)} " +
-          "= PASSWORD('#{mysql_dbh.quote(password)}')"
-        Chef::Log.debug("MySQL query: #{set_query}")
-        mysql_dbh.query(set_query)
-        mysql_dbh.reload
+      result = postgresql_dbh.exec(select_query)
+      if result.num_tuples == 1
+        Chef::Log.debug("PostgreSQL password OK for #{user.name}")
       else
-        Chef::Log.debug("MySQL password OK for #{user.name}@#{user.host}.")
+        alter_query = "ALTER USER #{postgresql_dbh.escape(user.name)} WITH PASSWORD '#{postgresql_dbh.escape(password)}'"
+        Chef::Log.debug("PostgreSQL query: #{alter_query}")
+        Chef::Log.info("Reseting PostgreSQL password of #{user.name}")
+        postgresql_dbh.query(alter_query)
       end
     end
-    
+
+
+    # TODO: finish, not in use yet
     def postgresql_user_privileges(grant)
       handle = postgresql_user_handle(grant, :grant)
       return @@grants[handle] if @@grants && @@grants[handle]
@@ -121,20 +118,28 @@ module Opscode
     
     private
     
-    def postgresql_dbh
-      return @@dbh if @@dbh
+    def postgresql_dbh(options = {}, force_reconnect = false)
+      # If force_reconnect true go ahed anyway otherwisei if @@dbh exists return it
+      return @@dbh if @@dbh unless force_reconnect  
       require "pg"
-      host, post, db, user, password = nil
-      File.read("/root/.pgpass").each do |line|
-        if line =~ /^\s*[^#]+\w$/
-          host, port, db, user, password = line.split(":")
-          break
-        end
-      end
+      
+      # Set defaults
       host = "localhost" if host.nil?
       port = 5432 if port.nil?
       db = "postgres" if db.nil? 
       user = "postgres" if user.nil?
+      password = nil
+      
+      # Set from .pgpass
+      File.read("/root/.pgpass").each do |line|
+        if line =~ /^\s*[^#]+\w+$/
+          host, port, db, user, password = line.split(":")
+          break
+        end
+      end
+      
+      # Overwrite connection options if needed
+      db = options[:db] if options[:db]
       
       # Connect to the PostgreSQL server. Options are:
       #pghost : Server hostname(string) 

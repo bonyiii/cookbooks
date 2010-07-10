@@ -76,6 +76,7 @@ template "#{node[:postgresql][:dir]}/pg_hba.conf" do
   group "postgres"
   mode 0600
   notifies :restart, resources(:service => "postgresql")
+  variables (:acls => node[:postgresql][:acls])
 end
 
 # Postgres main config file, replaces the one that initdb creates :(
@@ -92,7 +93,6 @@ template "#{node[:postgresql][:dir]}/postgresql.conf" do
   )
 end
 
-# template ".pgpass"
 postgresql_database "teszt" do
   action :delete
 end
@@ -119,10 +119,25 @@ end
 
 postgresql_user "gizi" do
   action :create
+  password "ferike"
+end
+
+postgresql_user "gizi" do
+  password "nem nem gizike"
+  force_password true
 end
 
 postgresql_grant "all_on_teszt_to_gizi" do
-  on "vendors"
+  on "users"
   user "gizi"
   privileges "ALL"
+  conn_db "teszt"
+end
+
+postgresql_grant "revoke_all_on_teszt_to_gizi" do
+  action :delete
+  on "users"
+  user "gizi"
+  privileges "ALL"
+  conn_db "teszt"
 end

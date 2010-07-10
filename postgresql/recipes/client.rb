@@ -31,7 +31,7 @@ end
 # set node[:postgresql][:root_password] to "" and we'll generate and store the
 # PostgreSQL root password locally
 postgresql_root_password = if node[:postgresql][:root_password] == ""
-  get_password("postgresql//root")
+  get_password("postgresql/root")
 else
   node[:postgresql][:root_password]
 end

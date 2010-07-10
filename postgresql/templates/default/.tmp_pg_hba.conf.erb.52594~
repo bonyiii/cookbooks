@@ -32,6 +32,5 @@ local   all         all                               trust
 host    all         all         127.0.0.1/32          trust
 # IPv6 local connections:
 host    all         all         ::1/128               trust
-<% @acls.each do |acl| %>
-<%= "#{acl[:type]}\t#{acl[:database]}\t#{acl[:user]}\t#{acl[:cidr_address]}\t#{acl[:method]}" %>
-<% end %>
+
+host	all		postgres	192.168.0.0/16		md5

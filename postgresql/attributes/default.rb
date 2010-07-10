@@ -58,6 +58,16 @@ default[:postgresql][:locale] = "en_US"
 default[:postgresql][:encoding] = "UTF-8"
 default[:postgresql][:listen_addresses] = "*"
 
+defualt[:postgresql][:acls] = [
+{
+  :type => "host",
+  :database => "postgres",
+  :user => "postgres",
+  :cidr_address => "192.168.0.0/16",
+  :method => "md5"
+}
+]
+
 # For .dot.pgpass
 default[:postgresql][:server_address] = "localhost"
 default[:postgresql][:port] = 5432
