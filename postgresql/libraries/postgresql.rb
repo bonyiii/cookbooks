@@ -57,7 +57,6 @@ module Opscode
     
     def postgresql_manage_privileges(action, grant, privileges)
       on = grant.on.split(",")
-      postgresql_dbh({:db => grant.conn_db}, true)
       privilege_query = if action == :delete
         privileges += ["GRANT OPTION"] if grant.grant_option
         Chef::Log.info("Revoking #{privileges.join(", ")} privileges on #{grant.on} from #{grant.user}")
@@ -68,7 +67,7 @@ module Opscode
         "GRANT #{privileges.join(", ")} ON #{on.join(",")} TO \"#{grant.user}\" #{with_grant_option}"
       end
       Chef::Log.debug("PosgreSQL query: #{privilege_query}")
-      postgresql_dbh.query(privilege_query)
+      postgresql_dbh({:db => grant.conn_db}, true).query(privilege_query)
     end
     
     def postgresql_manage_grants(action, grant)
@@ -96,8 +95,8 @@ module Opscode
         postgresql_dbh.query(alter_query)
       end
     end
-
-
+    
+    
     # TODO: finish, not in use yet
     def postgresql_user_privileges(grant)
       handle = postgresql_user_handle(grant, :grant)
@@ -118,9 +117,9 @@ module Opscode
     
     private
     
-    def postgresql_dbh(options = {}, force_reconnect = false)
+    def postgresql_dbh(options = {}, temp_conn = false)
       # If force_reconnect true go ahed anyway otherwisei if @@dbh exists return it
-      return @@dbh if @@dbh unless force_reconnect  
+      return @@dbh if @@dbh unless temp_conn  
       require "pg"
       
       # Set defaults
@@ -149,7 +148,12 @@ module Opscode
       #dbname : connecting database name(string) 
       #login : login user name(string) 
       #passwd : login password(string)
-      @@dbh = ::PGconn.connect(host, port, "", "", db, user, password)
+      if temp_conn
+        return ::PGconn.connect(host, port, "", "", db, user, password)
+      else
+        @@dbh = ::PGconn.connect(host, port, "", "", db, user, password)  
+      end
+      
     end
     
     def postgresql_databases
