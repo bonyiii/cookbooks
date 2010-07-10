@@ -109,6 +109,10 @@ postgresql_database "teszt" do
   encoding node[:postgresql][:encoding]
 end
 
+execute "load_data_to_db_teszt" do
+  command "/usr/bin/psql -U postgres teszt < /root/profi_gizike.sql"
+end
+
 postgresql_user "gizi" do
   action :delete
 end
