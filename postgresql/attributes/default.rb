@@ -58,7 +58,7 @@ default[:postgresql][:locale] = "en_US"
 default[:postgresql][:encoding] = "UTF-8"
 default[:postgresql][:listen_addresses] = "*"
 
-defualt[:postgresql][:acls] = [
+default[:postgresql][:acls] = [
 {
   :type => "host",
   :database => "postgres",
