@@ -7,6 +7,6 @@ end
 
 gentoo_package "app-editors/vim" do
   action :upgrade
-  use "vim-pager vim-pager"
+  use "vim-pager gpm"
   update_on_use_change false
 end
