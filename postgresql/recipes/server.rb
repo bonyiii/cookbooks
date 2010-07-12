@@ -79,7 +79,6 @@ template "#{node[:postgresql][:dir]}/pg_hba.conf" do
   variables (:acls => node[:postgresql][:acls])
 end
 
-=begin
 # Postgres main config file, replaces the one that initdb creates :(
 template "#{node[:postgresql][:dir]}/postgresql.conf" do
   source "postgresql.conf.erb"
@@ -93,7 +92,6 @@ template "#{node[:postgresql][:dir]}/postgresql.conf" do
     :listen_addresses => node[:postgresql][:listen_addresses]
   )
 end
-=end
 
 postgresql_database "teszt" do
   action :delete
