@@ -11,4 +11,4 @@ attribute :keywords,      :kind_of => String
 attribute :mask,          :kind_of => String
 attribute :unmask,        :kind_of => String
 attribute :use,           :kind_of => [ String, Array ]
-atrribute :update_on_use_change,    :kind_of =>[TrueClass, FalseClass], :default => true
+attribute :update_on_use_change,    :kind_of =>[TrueClass, FalseClass], :default => true
