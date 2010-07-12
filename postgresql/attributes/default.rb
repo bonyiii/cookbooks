@@ -54,10 +54,12 @@ else
   set[:postgresql][:dir]     = "/etc/postgresql/#{node.postgresql.version}/main"
 end
 
+# postgresql.conf
 default[:postgresql][:locale] = "en_US"
 default[:postgresql][:encoding] = "UTF-8"
 default[:postgresql][:listen_addresses] = "*"
 
+# pg_hba.conf
 default[:postgresql][:acls] = [
 {
   :type => "host",
