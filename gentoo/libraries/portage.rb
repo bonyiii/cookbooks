@@ -83,7 +83,7 @@ module Opscode
           Chef::Log.info("Upgrading gentoo_package[#{package_atom}] from version #{package_data[:current_version]}.")
           emerge(package_atom, new_resource.options)
           
-        elsif use_flags_changed
+        elsif use_flags_changed && new_resource.update_on_use_change
           Chef::Log.info("Upgrading gentoo_package[#{package_atom}] because of use flags change.")
           emerge(package_atom, new_resource.options)
         end
