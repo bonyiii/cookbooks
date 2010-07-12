@@ -1,6 +1,0 @@
-#http://www.postgresql.org/docs/8.4/static/libpq-pgpass.html
-#hostname:port:database:username:password
-<% if @host && @port && @database && @username && @password %>
-<% Chef::Log.debug("itt van dot.pgpass.erb #{@host}:#{@port}:#{@database}:#{@username}:#{@password}") %>
-<%= "#{@host}:#{@port}:#{@database}:#{@username}:#{@password}" %>
-<% end %>

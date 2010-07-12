@@ -30,7 +30,7 @@ case node[:platform]
   
   # To be able manipulate postgresql server via ruby.
   gentoo_package "dev-db/postgresql-server"
-  
+
   # Set default encoding in /etc/conf.d for emerge --config
   template "/etc/conf.d/postgresql-#{node[:postgresql][:version][node[:platform]][:default]}" do
     source "conf.d-postgresql-#{node[:postgresql][:version][node[:platform]][:default]}.erb"
@@ -79,6 +79,7 @@ template "#{node[:postgresql][:dir]}/pg_hba.conf" do
   variables (:acls => node[:postgresql][:acls])
 end
 
+=begin
 # Postgres main config file, replaces the one that initdb creates :(
 template "#{node[:postgresql][:dir]}/postgresql.conf" do
   source "postgresql.conf.erb"
@@ -92,6 +93,7 @@ template "#{node[:postgresql][:dir]}/postgresql.conf" do
     :listen_addresses => node[:postgresql][:listen_addresses]
   )
 end
+=end
 
 postgresql_database "teszt" do
   action :delete
