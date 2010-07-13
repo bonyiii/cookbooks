@@ -118,9 +118,12 @@ module Opscode
     private
     
     def postgresql_dbh(options = {}, temp_conn = false)
+      unless defined?(PGconn)
+        Gem.clear_paths
+        require "pg"
+      end
       # If force_reconnect true go ahed anyway otherwisei if @@dbh exists return it
       return @@dbh if @@dbh unless temp_conn  
-      require "pg"
       
       # Set defaults
       host = "localhost" if host.nil?
