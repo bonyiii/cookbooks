@@ -1,0 +1,7 @@
+maintainer       "Bonaventura Fleischmann"
+maintainer_email "boni@twine.hu"
+license          "Apache 2.0"
+description      "Sets up exim mailserver"
+version          "0.2"
+recipe           "exim", "Basic exim configuration"
+supports         "gentoo"

@@ -30,10 +30,10 @@ end
 
 # set node[:postgresql][:root_password] to "" and we'll generate and store the
 # PostgreSQL root password locally
-postgresql_root_password = if node[:postgresql][:root_password] == ""
+postgresql_user_password = if node[:postgresql][:pgpass][:user_password] == ""
   get_password("postgresql/root")
 else
-  node[:postgresql][:root_password]
+  node[:postgresql][:pgpass][:user_password]
 end
 
 template "/root/.pgpass" do
@@ -42,10 +42,10 @@ template "/root/.pgpass" do
   group "root"
   mode "0600"
   variables(
-    :host => node[:postgresql][:server_address],
-    :port => node[:postgresql][:port],
-    :database => node[:postgresql][:database],
-    :username => node[:postgresql][:root],
-    :password => postgresql_root_password
+    :host => node[:postgresql][:pgpass][:server_address],
+    :port => node[:postgresql][:pgpass][:port],
+    :database => node[:postgresql][:pgpass][:database],
+    :username => node[:postgresql][:pgpass][:user],
+    :password => postgresql_user_password
   )
 end

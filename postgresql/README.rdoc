@@ -6,7 +6,7 @@ Installs and configures postgresql client or server.
 
 == Platform:
 
-Tested on Ubuntu 8.10, but adapted from Red Hat Enterprise 5.0 based recipes.
+Tested on Gentoo, forked from Opscode PostgreSQL recipe
 
 == Cookbooks:
 
@@ -29,6 +29,7 @@ For server:
 = LICENSE and AUTHOR:
       
 Author:: Joshua Timberman (<joshua@opscode.com>)
+Modifier:: Bonaventura Fleischmann (<boni@twine.hu>)
 
 Copyright:: 2009, Opscode, Inc
 

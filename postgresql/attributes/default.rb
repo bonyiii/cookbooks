@@ -71,8 +71,8 @@ default[:postgresql][:acls] = [
 ]
 
 # For .dot.pgpass
-default[:postgresql][:server_address] = "localhost"
-default[:postgresql][:port] = 5432
-default[:postgresql][:database] = "postgres"
-default[:postgresql][:root] = "postgres"
-default[:postgresql][:root_password] = "password"
+default[:postgresql][:pgpass][:server_address] = "localhost"
+default[:postgresql][:pgpass][:port] = 5432
+default[:postgresql][:pgpass][:database] = "postgres"
+default[:postgresql][:pgpass][:user] = "postgres"
+default[:postgresql][:pgpass][:user_password] = "password"
