@@ -140,3 +140,11 @@ postgresql_grant "revoke_all_on_teszt_to_gizi" do
   privileges "ALL"
   conn_db "teszt"
 end
+
+postgresql_database "match" do
+  action :create
+  owner "match"
+  owner_createdb true
+  owner_createrole true
+  encoding node[:postgresql][:encoding]
+end
