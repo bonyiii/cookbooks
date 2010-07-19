@@ -6,6 +6,10 @@ case node[:platform]
     action :remove
   end
   
+  gentoo_package_use "net-nds/openldap sasl" do
+    action :create
+  end
+  
   gentoo_package "mail-mta/exim" do
     action :upgrade
     use ["maildir", "syslog", "ldap", "ipv6", "tcpd", "-gnutls"]
