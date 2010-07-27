@@ -29,7 +29,7 @@ case node[:platform]
   
   # To be able manipulate postgresql server via ruby.
   gentoo_package "dev-db/postgresql-server"
-  
+
   # Set default encoding in /etc/conf.d for emerge --config
   template "/etc/conf.d/postgresql-#{node[:postgresql][:version][node[:platform]][:default]}" do
     source "conf.d-postgresql-#{node[:postgresql][:version][node[:platform]][:default]}.erb"
@@ -92,12 +92,59 @@ template "#{node[:postgresql][:dir]}/postgresql.conf" do
   )
 end
 
-if node.postgresql.attribute?("db")
-  postgresql_database node[:postgresql][:db] do
-    action :create
-    owner node[:postgresql][:db]
-    owner_createdb true
-    owner_createrole true
-    encoding node[:postgresql][:encoding]
-  end
+postgresql_database "teszt" do
+  action :delete
+end
+
+postgresql_user "feri" do
+  action :delete
+end
+
+postgresql_database "teszt" do
+  action :create
+  owner "feri"
+  owner_createdb true
+  owner_createrole true
+  encoding node[:postgresql][:encoding]
+end
+
+execute "load_data_to_db_teszt" do
+  command "/usr/bin/psql -U postgres teszt < /root/profi_gizike.sql"
+end
+
+postgresql_user "gizi" do
+  action :delete
+end
+
+postgresql_user "gizi" do
+  action :create
+  password "ferike"
+end
+
+postgresql_user "gizi" do
+  password "titok"
+  force_password true
+end
+
+postgresql_grant "all_on_teszt_to_gizi" do
+  on "users"
+  user "gizi"
+  privileges "ALL"
+  conn_db "teszt"
+end
+
+postgresql_grant "revoke_all_on_teszt_to_gizi" do
+  action :delete
+  on "users"
+  user "gizi"
+  privileges "ALL"
+  conn_db "teszt"
+end
+
+postgresql_database "match" do
+  action :create
+  owner "match"
+  owner_createdb true
+  owner_createrole true
+  encoding node[:postgresql][:encoding]
 end
