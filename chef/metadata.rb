@@ -11,7 +11,7 @@ recipe           "chef::webui", "Chef WebUI configuration"
 recipe           "chef::webui_proxy", "Nginx SSL proxy for Chef WebUI"
 supports         "gentoo"
 
-%w(couchdb gentoo git nginx rabbitmq).each { |cb|
+%w(couchdb gentoo git rabbitmq).each { |cb|
   depends cb
 }
 
