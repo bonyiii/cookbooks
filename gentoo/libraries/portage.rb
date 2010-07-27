@@ -66,9 +66,11 @@ module Opscode
         package_atom = "=#{package_atom}-#{new_resource.version}" if new_resource.version
         
         if new_resource.use
-          package_use = [package_atom, [new_resource.use]].flatten.join(" ")
-          use_flags_changed = manage_package_foo(:create, "use", package_use)
-          Chef::Log.debug("itt van gentoo/libraries/portage use_flags_changed #{use_flags_changed}")
+          # for eix variant
+          Chef::Log.debug("gentoo/portage/new_resource.use #{new_resource.use.class} | Array size: #{new_resource.use.size}| #{ [new_resource.use].flatten.join(" ") } | #{package_data[:use_flags].class} | #{ package_data[:use_flags]} ")
+          use_flags_changed = true if [new_resource.use].flatten.join(" ").split(" ").delete_if{ |use_flag| package_data[:use_flags].split(" ").include?(use_flag) }.size > 0
+          #package_use = [package_atom, [new_resource.use]].flatten.join(" ")
+          #use_flags_changed = manage_package_foo(:create, "use", package_use)
         end
         
         if package_data[:current_version] == "" || action == :reinstall
@@ -141,19 +143,20 @@ module Opscode
         end
         
         query_command = [eix, "--nocolor", "--pure-packages", "--stable", "--exact",
-          '--format "<category>\t<name>\t<installedversions:VERSION>\t<bestversion:VERSION>\n"',
+          '--format "<category>\t<name>\t<installedversions:VERSION>\t<bestversion:VERSION>\t<installedversions:FORMAT_INST_USEFLAGS>\n"',
         package_name.count("/") > 0 ? "--category-name" : "--name", package_name].join(" ")
         
         eix_out = eix_stderr = nil
         
         Chef::Log.debug("Calling `#{query_command}`.")
         status = Chef::Mixin::Command.popen4(query_command) { |pid,stdin,stdout,stderr|
-          eix_out = if stdout.read.split("\n").first =~ /\A(\S+)\t(\S+)\t(\S*)\t(\S+)\Z/
+          eix_out = if stdout.read.split("\n").first =~ /\A(\S+)\t(\S+)\t(\S*)\t(\S+)\t\(?([ \S]*)\)?\Z/
             {
               :category => $1,
               :package_name => $2,
               :current_version => $3,
-              :candidate_version => $4
+              :candidate_version => $4,
+              :use_flags => $5
             }
           end
           eix_stderr = stderr.read
@@ -162,7 +165,7 @@ module Opscode
         eix_out ||= {}
         
         if status.exitstatus == 0
-          Chef::Log.debug("Eix search for #{package_name} returned: category: \"#{eix_out[:category]}\", package_name: \"#{eix_out[:package_name]}\", current_version: \"#{eix_out[:current_version]}\", candidate_version: \"#{eix_out[:candidate_version]}\".")
+          Chef::Log.debug("Eix search for #{package_name} returned: category: \"#{eix_out[:category]}\", package_name: \"#{eix_out[:package_name]}\", current_version: \"#{eix_out[:current_version]}\", candidate_version: \"#{eix_out[:candidate_version]}\", use_flags: \"#{eix_out[:use_flags]}\".")
         else
           raise Chef::Exceptions::Package, "Eix search failed: `#{query_command}`\n#{eix_stderr}\n#{status.inspect}!"
         end
