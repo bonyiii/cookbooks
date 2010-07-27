@@ -16,6 +16,12 @@ case node[:platform]
   end
 end
 
+cookbook_file "/etc/exim/exim.conf" do
+  source "exim.conf"
+  owner "root"
+  group "root"
+  mode "0600"
+end
 
 service "exim" do
   case node[:platform]
