@@ -122,7 +122,7 @@ module Opscode
         Gem.clear_paths
         require "pg"
       end
-      # If force_reconnect true go ahed anyway otherwisei if @@dbh exists return it
+      # If force_reconnect true go ahed anyway otherwise if @@dbh exists returns it
       return @@dbh if @@dbh unless temp_conn  
       
       # Set defaults

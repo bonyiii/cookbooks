@@ -40,7 +40,8 @@ template "/etc/chef/client.rb" do
   mode "0644"
   variables(
     :chef_server_url => node[:chef][:client][:server_url],
-    :syslog => node[:chef][:syslog]
+    :syslog => node[:chef][:syslog],
+    :log_level => node[:chef][:log_level]
   )
   notifies :create, resources(:ruby_block => "reload_client_config")
 end
