@@ -9,13 +9,13 @@ generate_make_conf "default"
 directory "/etc/portage" do
   owner "root"
   group "portage"
-  mode "0770"
+  mode "0775"
 end
 
 directory "/var/log/portage" do
   owner "portage"
   group "portage"
-  mode "2770"
+  mode "2775"
 end
 
 directory "/var/log/portage/elog" do
@@ -44,6 +44,6 @@ end
   directory "/etc/portage/package.#{d}" do
     owner "root"
     group "portage"
-    mode "0770"
+    mode "0775"
   end
 end

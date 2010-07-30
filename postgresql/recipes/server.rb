@@ -108,6 +108,7 @@ postgresql_database "teszt" do
   encoding node[:postgresql][:encoding]
 end
 
+=begin
 execute "load_data_to_db_teszt" do
   command "/usr/bin/psql -U postgres teszt < /root/profi_gizike.sql"
 end
@@ -148,3 +149,4 @@ postgresql_database "match" do
   owner_createrole true
   encoding node[:postgresql][:encoding]
 end
+=end

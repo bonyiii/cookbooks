@@ -68,7 +68,6 @@ module Opscode
         if new_resource.use
           package_use = [package_atom, [new_resource.use]].flatten.join(" ")
           use_flags_changed = manage_package_foo(:create, "use", package_use)
-          Chef::Log.debug("itt van gentoo/libraries/portage use_flags_changed #{use_flags_changed}")
         end
         
         if package_data[:current_version] == "" || action == :reinstall
