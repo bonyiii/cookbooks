@@ -29,7 +29,7 @@ case node[:platform]
   
   # To be able manipulate postgresql server via ruby.
   gentoo_package "dev-db/postgresql-server"
-
+  
   # Set default encoding in /etc/conf.d for emerge --config
   template "/etc/conf.d/postgresql-#{node[:postgresql][:version][node[:platform]][:default]}" do
     source "conf.d-postgresql-#{node[:postgresql][:version][node[:platform]][:default]}.erb"
@@ -92,6 +92,21 @@ template "#{node[:postgresql][:dir]}/postgresql.conf" do
   )
 end
 
+if node.postgresql.db.attribute?("name")
+  postgresql_database postgresql[:db][:name] do
+    action :create
+    owner postgresql[:db][:user]
+    owner_createdb true
+    owner_createrole true
+    encoding node[:postgresql][:encoding]
+  end
+  
+  postgresql_user postgresql[:db][:user] do
+    password postgresql[:db][:passwd]
+    force_password true
+  end
+end
+=begin
 postgresql_database "teszt" do
   action :delete
 end
@@ -108,7 +123,6 @@ postgresql_database "teszt" do
   encoding node[:postgresql][:encoding]
 end
 
-=begin
 execute "load_data_to_db_teszt" do
   command "/usr/bin/psql -U postgres teszt < /root/profi_gizike.sql"
 end
