@@ -74,8 +74,7 @@ service "postgresql" do
   end
   supports :restart => true, :status => true, :reload => true
   #action :nothing
-  #action [:enable, :start]
-  action :enable
+  action [:enable, :start]
 end
 
 # Postgres main config file, replaces the one that initdb creates :(
