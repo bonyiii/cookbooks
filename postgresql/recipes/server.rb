@@ -28,7 +28,9 @@ case node[:platform]
   end
   
   # To be able manipulate postgresql server via ruby.
-  gentoo_package "dev-db/postgresql-server"
+  gentoo_package "dev-db/postgresql-server" do
+    action :upgrade
+  end
   
   # Set default encoding in /etc/conf.d for emerge --config
   template "/etc/conf.d/postgresql-#{node[:postgresql][:version][node[:platform]][:default]}" do
@@ -57,6 +59,13 @@ else
   package "postgresql"
 end
 
+#Logging
+directory node[:postgresql][:log][:dir] do
+  owner "postgres"
+  group "postgres"
+  mode 0755
+end
+
 service "postgresql" do
   case node[:platform]
     when "debian","ubuntu", "gentoo"
@@ -65,17 +74,8 @@ service "postgresql" do
   end
   supports :restart => true, :status => true, :reload => true
   #action :nothing
-  action [:enable, :start]
-end
-
-# ACL -s 
-template "#{node[:postgresql][:dir]}/pg_hba.conf" do
-  source "pg_hba.conf.erb"
-  owner "postgres"
-  group "postgres"
-  mode 0600
-  notifies :restart, resources(:service => "postgresql")
-  variables (:acls => node[:postgresql][:acls])
+  #action [:enable, :start]
+  action :enable
 end
 
 # Postgres main config file, replaces the one that initdb creates :(
@@ -88,21 +88,32 @@ template "#{node[:postgresql][:dir]}/postgresql.conf" do
   variables(
     :locale => node[:postgresql][:locale],
     :encoding => node[:postgresql][:encoding],
-    :listen_addresses => node[:postgresql][:listen_addresses]
+    :listen_addresses => node[:postgresql][:listen_addresses],
+    :log_dir => node[:postgresql][:log][:dir]
   )
 end
 
+# ACL -s 
+template "#{node[:postgresql][:dir]}/pg_hba.conf" do
+  source "pg_hba.conf.erb"
+  owner "postgres"
+  group "postgres"
+  mode 0600
+  notifies :restart, resources(:service => "postgresql")
+  variables (:acls => node[:postgresql][:acls])
+end
+
 if node.postgresql.db.attribute?("name")
-  postgresql_database postgresql[:db][:name] do
+  postgresql_database node[:postgresql][:db][:name] do
     action :create
-    owner postgresql[:db][:user]
+    owner node[:postgresql][:db][:user]
     owner_createdb true
     owner_createrole true
     encoding node[:postgresql][:encoding]
   end
   
-  postgresql_user postgresql[:db][:user] do
-    password postgresql[:db][:passwd]
+  postgresql_user node[:postgresql][:db][:user] do
+    password node[:postgresql][:db][:passwd]
     force_password true
   end
 end

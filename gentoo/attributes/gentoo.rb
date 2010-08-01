@@ -26,7 +26,7 @@ default[:gentoo][:use_expands] = {}
 default[:gentoo][:elog_mailuri] = "" # "foo@example.com smtp.example.com"
 default[:gentoo][:elog_mailfrom] = "portage@#{node[:fqdn]}"
 default[:gentoo][:rsync_mirror] = "rsync://rsync.gentoo.org/gentoo-portage"
-default[:gentoo][:distfile_mirrors] = ["http://gentoo.osuosl.org/"]
+default[:gentoo][:distfile_mirrors] = ["http://gentoo.inf.elte.hu/", "http://gentoo.osuosl.org/"]
 default[:gentoo][:portage_binhost] = ""
 
 default[:gentoo][:hwtimezone] = "UTC" # "local"

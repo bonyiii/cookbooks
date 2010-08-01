@@ -76,3 +76,9 @@ default[:postgresql][:pgpass][:port] = 5432
 default[:postgresql][:pgpass][:database] = "postgres"
 default[:postgresql][:pgpass][:user] = "postgres"
 default[:postgresql][:pgpass][:user_password] = "password"
+
+default[:postgresql][:db][:name]= nil
+default[:postgresql][:db][:user]= nil
+default[:postgresql][:db][:passwd]= nil
+
+default[:postgresql][:log][:dir] = "/var/log/postgresql"
