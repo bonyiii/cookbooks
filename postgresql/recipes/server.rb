@@ -106,8 +106,7 @@ if node.postgresql.db.attribute?("name")
   postgresql_database node[:postgresql][:db][:name] do
     action :create
     owner node[:postgresql][:db][:user]
-    owner_createdb true
-    owner_createrole true
+    owner_superuser true
     encoding node[:postgresql][:encoding]
   end
   
@@ -116,61 +115,3 @@ if node.postgresql.db.attribute?("name")
     force_password true
   end
 end
-=begin
-postgresql_database "teszt" do
-  action :delete
-end
-
-postgresql_user "feri" do
-  action :delete
-end
-
-postgresql_database "teszt" do
-  action :create
-  owner "feri"
-  owner_createdb true
-  owner_createrole true
-  encoding node[:postgresql][:encoding]
-end
-
-execute "load_data_to_db_teszt" do
-  command "/usr/bin/psql -U postgres teszt < /root/profi_gizike.sql"
-end
-
-postgresql_user "gizi" do
-  action :delete
-end
-
-postgresql_user "gizi" do
-  action :create
-  password "ferike"
-end
-
-postgresql_user "gizi" do
-  password "titok"
-  force_password true
-end
-
-postgresql_grant "all_on_teszt_to_gizi" do
-  on "users"
-  user "gizi"
-  privileges "ALL"
-  conn_db "teszt"
-end
-
-postgresql_grant "revoke_all_on_teszt_to_gizi" do
-  action :delete
-  on "users"
-  user "gizi"
-  privileges "ALL"
-  conn_db "teszt"
-end
-
-postgresql_database "match" do
-  action :create
-  owner "match"
-  owner_createdb true
-  owner_createrole true
-  encoding node[:postgresql][:encoding]
-end
-=end

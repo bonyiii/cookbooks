@@ -44,3 +44,52 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+
+Examples:
+
+# Drop database
+postgresql_database "foo" do
+  action :delete
+end
+
+# Drop user
+postgresql_user "bar" do
+  action :delete
+end
+
+# Create database and owner user
+postgresql_database "foo" do
+  action :create
+  owner "bar"
+  owner_createdb true
+  owner_createrole true
+  encoding node[:postgresql][:encoding]
+end
+
+# Create user with password
+postgresql_user "foobar" do
+  action :create
+  password "password"
+end
+
+# Ensure user password is set to "drowssap"
+postgresql_user "barfoo" do
+  password "drowssap"
+  force_password true
+end
+
+postgresql_grant "all_on_foo_to_bar" do
+  # on is the table name on which permissions granted
+  on "users"
+  user "bar"
+  privileges "ALL"
+  conn_db "foo"
+end
+
+postgresql_grant "revoke_all_on_foo_from_bar" do
+  action :delete
+  on "users"
+  user "bar"
+  privileges "ALL"
+  conn_db "foo"
+end
