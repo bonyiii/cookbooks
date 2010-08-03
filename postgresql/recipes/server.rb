@@ -88,7 +88,8 @@ template "#{node[:postgresql][:dir]}/postgresql.conf" do
     :locale => node[:postgresql][:locale],
     :encoding => node[:postgresql][:encoding],
     :listen_addresses => node[:postgresql][:listen_addresses],
-    :log_dir => node[:postgresql][:log][:dir]
+    :log_dir => node[:postgresql][:log][:dir],
+    :log_statements=> node[:postgresql][:log][:statements]
   )
 end
 

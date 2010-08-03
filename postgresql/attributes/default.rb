@@ -82,3 +82,5 @@ default[:postgresql][:db][:user]= nil
 default[:postgresql][:db][:passwd]= nil
 
 default[:postgresql][:log][:dir] = "/var/log/postgresql"
+# Log all statements great for debugging
+default[:postgresql][:log][:statements] = "all"
