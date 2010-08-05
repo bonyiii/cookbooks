@@ -24,7 +24,7 @@ set[:postgresql][:version] = value_for_platform(
     "9.10" => "8.3",
     "10.04" => "8.4",
     "default" => "8.4"
-  },
+},
   "fedora" => {
     "10" => "8.3",
     "11" => "8.3",
@@ -32,21 +32,21 @@ set[:postgresql][:version] = value_for_platform(
     "13" => "8.4",
     "14" => "8.4",
     "default" => "8.4"
-  },
-  ["redhat", "centos"] => {
+},
+["redhat", "centos"] => {
     "default" => "8.3"
-  },
+},
   "gentoo" => {
     "default" => "8.4"
-  }
+}
 )
 
 case platform
-when "redhat","centos","fedora","suse"
+  when "redhat","centos","fedora","suse"
   set[:postgresql][:dir]     = "/var/lib/pgsql/data"
-when "debian","ubuntu"
+  when "debian","ubuntu"
   set[:postgresql][:dir]     = "/etc/postgresql/#{node.postgresql.version}/main"
-when "gentoo"
+  when "gentoo"
   #Chef::Log.info("attributes/default #{node[:postgresql][:version][node[:platform]][:default]}")
   #set[:postgresql][:dir]     = "/var/lib/postgresql/#{node[:postgresql][:version]}/data"
   set[:postgresql][:dir]     = "/var/lib/postgresql/#{node[:postgresql][:version][node[:platform]][:default]}/data"
@@ -61,8 +61,7 @@ default[:postgresql][:listen_addresses] = "*"
 
 # pg_hba.conf
 default[:postgresql][:acls] = [
-{
-  :type => "host",
+{ :type => "host",
   :database => "postgres",
   :user => "postgres",
   :cidr_address => "192.168.0.0/16",
@@ -77,9 +76,12 @@ default[:postgresql][:pgpass][:database] = "postgres"
 default[:postgresql][:pgpass][:user] = "postgres"
 default[:postgresql][:pgpass][:user_password] = "password"
 
-default[:postgresql][:db][:name]= nil
-default[:postgresql][:db][:user]= nil
-default[:postgresql][:db][:passwd]= nil
+default[:postgresql][:dbs] = [
+{ :name => nil,
+  :user => nil,
+  :passwd => nil
+}
+]
 
 default[:postgresql][:log][:dir] = "/var/log/postgresql"
 # Log all statements great for debugging

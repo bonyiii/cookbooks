@@ -103,16 +103,19 @@ template "#{node[:postgresql][:dir]}/pg_hba.conf" do
   variables (:acls => node[:postgresql][:acls])
 end
 
-if node.postgresql.db.attribute?("name")
-  postgresql_database node[:postgresql][:db][:name] do
-    action :create
-    owner node[:postgresql][:db][:user]
-    owner_superuser true
-    encoding node[:postgresql][:encoding]
-  end
-  
-  postgresql_user node[:postgresql][:db][:user] do
-    password node[:postgresql][:db][:passwd]
-    force_password true
+#node.postgresql.dbs.first.attribute?("name")
+if node.postgresql.dbs.first
+  node.postgresql.dbs.each do |db|
+    postgresql_database db[:name] do
+      action :create
+      owner db[:user]
+      owner_superuser true
+      encoding db[:encoding]
+    end
+    
+    postgresql_user db[:user] do
+      password db[:passwd]
+      force_password true
+    end
   end
 end
